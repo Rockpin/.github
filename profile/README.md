@@ -1,12 +1,12 @@
-## Hi there 👋
-
-<!--
-
-**Here are some ideas to get you started:**
-
-🙋‍♀️ A short introduction - what is your organization all about?
-🌈 Contribution guidelines - how can the community get involved?
-👩‍💻 Useful resources - where can the community find your docs? Is there anything else the community should know?
-🍿 Fun facts - what does your team eat for breakfast?
-🧙 Remember, you can do mighty things with the power of [Markdown](https://docs.github.com/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax)
--->
+NODE_ENV=production
+DEBUG=True
+PORT=3000
+ 
+DATABASE_URL=postgresql://admin:admin123@localhost:5432/prod
+DB_USER=admin 
+DB_PASSWORD=admin123
+REDIS_PASSWORD=
+ 
+AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAM1PLE
+AWS_SECRET_ACCESS_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMP1LEKEY
+AWS_DEFAULT_REGION=ap-northeast-2 
