@@ -3,7 +3,7 @@ DEBUG=True
 PORT=3000
  
 DATABASE_URL=postgresql://admin:admin123@localhost:5432/prod
-DB_USER=admin 
+DB_USER=admin
 DB_PASSWORD=admin123
 REDIS_PASSWORD=
  
