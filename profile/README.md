@@ -18,10 +18,10 @@
 
 | 순위 | 도시 | 점수 | 7일 날씨 | 낮 / 밤 | 비 오는 날 | 물가 (한국 대비) | 환율 (1년 평균 대비) |
 |---:|---|---:|---|:-:|:-:|---:|---:|
-| 4 | <img src="https://flagcdn.com/20x15/jp.png" width="20" height="15" alt="일본"> **오사카** | 80 | ☁️🌧️🌤️🌤️☁️☁️🌧️ | 26° / 17° | 2일 | 1% 비싸요 | 8% 싸요 |
-| 5 | <img src="https://flagcdn.com/20x15/jp.png" width="20" height="15" alt="일본"> **후쿠오카** | 80 | 🌧️☁️🌤️🌤️☁️☁️🌧️ | 27° / 18° | 2일 | 1% 비싸요 | 8% 싸요 |
-| 6 | <img src="https://flagcdn.com/20x15/fr.png" width="20" height="15" alt="프랑스"> **파리** | 78 | 🌦️🌫️☀️🌧️☀️☀️☀️ | 19° / 12° | 1일 | 23% 비싸요 | 11% 싸요 |
-| 7 | <img src="https://flagcdn.com/20x15/vn.png" width="20" height="15" alt="베트남"> **하노이** | 76 | 🌧️🌧️🌧️🌧️🌦️🌧️🌧️ | 31° / 23° | 4일 | 57% 싸요 | 7% 싸요 |
+| 4 | <img src="https://flagcdn.com/20x15/jp.png" width="20" height="15" alt="일본"> **오사카** | 81 | ☁️🌧️🌤️🌤️☁️☁️🌧️ | 26° / 17° | 2일 | 1% 비싸요 | 8% 싸요 |
+| 5 | <img src="https://flagcdn.com/20x15/jp.png" width="20" height="15" alt="일본"> **후쿠오카** | 81 | 🌧️☁️🌤️🌤️☁️☁️🌧️ | 27° / 18° | 2일 | 1% 비싸요 | 8% 싸요 |
+| 6 | <img src="https://flagcdn.com/20x15/fr.png" width="20" height="15" alt="프랑스"> **파리** | 79 | 🌦️🌫️☀️🌧️☀️☀️☀️ | 19° / 12° | 1일 | 23% 비싸요 | 11% 싸요 |
+| 7 | <img src="https://flagcdn.com/20x15/vn.png" width="20" height="15" alt="베트남"> **하노이** | 77 | 🌧️🌧️🌧️🌧️🌦️🌧️🌧️ | 31° / 23° | 4일 | 57% 싸요 | 7% 싸요 |
 | 8 | <img src="https://flagcdn.com/20x15/jp.png" width="20" height="15" alt="일본"> **삿포로** | 72 | ☁️🌧️🌧️🌧️☁️☁️🌧️ | 18° / 10° | 3일 | 1% 비싸요 | 8% 싸요 |
 | 9 | <img src="https://flagcdn.com/20x15/hk.png" width="20" height="15" alt="홍콩"> **홍콩** | 71 | ☀️🌤️🌤️🌥️🌤️🌤️🌤️ | 31° / 26° | 0일 | 11% 비싸요 | 8% 싸요 |
 | 10 | <img src="https://flagcdn.com/20x15/us.png" width="20" height="15" alt="미국"> **뉴욕** | 71 | ☁️☀️☀️☀️🌦️🌤️☀️ | 19° / 14° | 1일 | 54% 비싸요 | 8% 싸요 |
@@ -30,7 +30,7 @@
 | 13 | <img src="https://flagcdn.com/20x15/ph.png" width="20" height="15" alt="필리핀"> **세부** | 68 | 🌧️🌧️🌧️🌧️🌧️🌧️🌧️ | 30° / 26° | 7일 | 51% 싸요 | 12% 싸요 |
 | 14 | <img src="https://flagcdn.com/20x15/th.png" width="20" height="15" alt="타이"> **방콕** | 68 | ⛈️⛈️⛈️⛈️⛈️🌧️🌧️ | 32° / 26° | 6일 | 53% 싸요 | 11% 싸요 |
 | 15 | <img src="https://flagcdn.com/20x15/my.png" width="20" height="15" alt="말레이시아"> **쿠알라룸푸르** | 64 | ⛈️🌧️⛈️⛈️🌦️🌧️🌦️ | 33° / 24° | 6일 | 47% 싸요 | 9% 싸요 |
-| 16 | <img src="https://flagcdn.com/20x15/au.png" width="20" height="15" alt="오스트레일리아"> **시드니** | 57 | 🌦️🌦️🌦️🌦️🌦️🌧️🌦️ | 20° / 14° | 6일 | 57% 비싸요 | 8% 싸요 |
+| 16 | <img src="https://flagcdn.com/20x15/au.png" width="20" height="15" alt="오스트레일리아"> **시드니** | 57 | 🌦️🌦️🌦️🌦️🌦️🌧️🌦️ | 20° / 14° | 6일 | 56% 비싸요 | 8% 싸요 |
 | 17 | <img src="https://flagcdn.com/20x15/sg.png" width="20" height="15" alt="싱가포르"> **싱가포르** | 48 | ⛈️⛈️⛈️⛈️🌧️🌧️🌧️ | 32° / 25° | 7일 | 20% 비싸요 | 8% 싸요 |
 
 </details>
@@ -40,25 +40,25 @@
 
 <!-- fx:start -->
 ## 💱 오늘 환율
-<sub>10/13(화) 오전 11:28 · 하나은행 기준 · 매일 아침 9시에 바뀌어요</sub>
+<sub>10/13(화) 오전 11:29 · 하나은행 기준 · 매일 아침 9시에 바뀌어요</sub>
 
 > 💡 엔이 지난 10년 중 가장 싼 편이에요.
 
 | 통화 | 환율 | 어제보다 | 1,000원이면 | 빠른 계산 (현지 가격 → 원) | 1년 평균보다 |
 |---|---:|---:|---:|---|---:|
-| <img src="https://flagcdn.com/20x15/us.png" width="20" height="15" alt="미국"> 달러 | 1,339.30원 | 🔺 3.30 | 0.747달러 | 달러 × 1,340 | 8% 싸요 |
-| <img src="https://flagcdn.com/20x15/jp.png" width="20" height="15" alt="일본"> 엔 (100엔) | 846.32원 | 🔺 3.98 | 118엔 | 엔 × 8.5 | 8% 싸요 |
-| <img src="https://flagcdn.com/20x15/eu.png" width="20" height="15" alt="유럽"> 유로 | 1,496.67원 | 🔺 5.89 | 0.668유로 | 유로 × 1,500 | 11% 싸요 |
-| <img src="https://flagcdn.com/20x15/cn.png" width="20" height="15" alt="중국"> 위안 | 200.01원 | 🔺 0.45 | 5.00위안 | 위안 × 200 | 6% 싸요 |
-| <img src="https://flagcdn.com/20x15/tw.png" width="20" height="15" alt="대만"> 대만 달러 | 41.75원 | 🔻 0.07 | 23.95달러 | 달러 × 42 | 9% 싸요 |
-| <img src="https://flagcdn.com/20x15/hk.png" width="20" height="15" alt="홍콩"> 홍콩 달러 | 170.67원 | 🔺 0.42 | 5.86달러 | 달러 × 170 | 8% 싸요 |
-| <img src="https://flagcdn.com/20x15/th.png" width="20" height="15" alt="태국"> 바트 | 39.86원 | 🔺 0.13 | 25.09바트 | 바트 × 40 | 11% 싸요 |
-| <img src="https://flagcdn.com/20x15/vn.png" width="20" height="15" alt="베트남"> 동 (100동) | 5.17원 | 🔺 0.01 | 19,342동 | 동에서 0 두 개 떼고 × 5.2 | 7% 싸요 |
-| <img src="https://flagcdn.com/20x15/ph.png" width="20" height="15" alt="필리핀"> 페소 | 21.33원 | 🔺 0.02 | 46.88페소 | 페소 × 21 | 12% 싸요 |
-| <img src="https://flagcdn.com/20x15/sg.png" width="20" height="15" alt="싱가포르"> 싱가포르 달러 | 1,046.00원 | 🔺 2.98 | 0.956달러 | 달러 × 1,050 | 8% 싸요 |
-| <img src="https://flagcdn.com/20x15/my.png" width="20" height="15" alt="말레이시아"> 링깃 | 327.86원 | 🔺 1.29 | 3.05링깃 | 링깃 × 330 | 9% 싸요 |
-| <img src="https://flagcdn.com/20x15/gb.png" width="20" height="15" alt="영국"> 영국 파운드 | 1,770.76원 | 🔺 6.04 | 0.565파운드 | 파운드 × 1,800 | 9% 싸요 |
-| <img src="https://flagcdn.com/20x15/au.png" width="20" height="15" alt="호주"> 호주 달러 | 932.02원 | 🔺 2.30 | 1.07달러 | 달러 × 930 | 8% 싸요 |
+| <img src="https://flagcdn.com/20x15/us.png" width="20" height="15" alt="미국"> 달러 | 1,338.90원 | 🔺 2.90 | 0.747달러 | 달러 × 1,340 | 8% 싸요 |
+| <img src="https://flagcdn.com/20x15/jp.png" width="20" height="15" alt="일본"> 엔 (100엔) | 846.01원 | 🔺 3.67 | 118엔 | 엔 × 8.5 | 8% 싸요 |
+| <img src="https://flagcdn.com/20x15/eu.png" width="20" height="15" alt="유럽"> 유로 | 1,496.09원 | 🔺 5.31 | 0.668유로 | 유로 × 1,500 | 11% 싸요 |
+| <img src="https://flagcdn.com/20x15/cn.png" width="20" height="15" alt="중국"> 위안 | 199.93원 | 🔺 0.37 | 5.00위안 | 위안 × 200 | 6% 싸요 |
+| <img src="https://flagcdn.com/20x15/tw.png" width="20" height="15" alt="대만"> 대만 달러 | 41.76원 | 🔻 0.06 | 23.95달러 | 달러 × 42 | 9% 싸요 |
+| <img src="https://flagcdn.com/20x15/hk.png" width="20" height="15" alt="홍콩"> 홍콩 달러 | 170.61원 | 🔺 0.36 | 5.86달러 | 달러 × 170 | 8% 싸요 |
+| <img src="https://flagcdn.com/20x15/th.png" width="20" height="15" alt="태국"> 바트 | 39.85원 | 🔺 0.12 | 25.09바트 | 바트 × 40 | 11% 싸요 |
+| <img src="https://flagcdn.com/20x15/vn.png" width="20" height="15" alt="베트남"> 동 (100동) | 5.16원 | 그대로 | 19,380동 | 동에서 0 두 개 떼고 × 5.2 | 7% 싸요 |
+| <img src="https://flagcdn.com/20x15/ph.png" width="20" height="15" alt="필리핀"> 페소 | 21.32원 | 🔺 0.01 | 46.90페소 | 페소 × 21 | 12% 싸요 |
+| <img src="https://flagcdn.com/20x15/sg.png" width="20" height="15" alt="싱가포르"> 싱가포르 달러 | 1,045.61원 | 🔺 2.59 | 0.956달러 | 달러 × 1,050 | 8% 싸요 |
+| <img src="https://flagcdn.com/20x15/my.png" width="20" height="15" alt="말레이시아"> 링깃 | 327.76원 | 🔺 1.19 | 3.05링깃 | 링깃 × 330 | 9% 싸요 |
+| <img src="https://flagcdn.com/20x15/gb.png" width="20" height="15" alt="영국"> 영국 파운드 | 1,769.96원 | 🔺 5.24 | 0.565파운드 | 파운드 × 1,800 | 9% 싸요 |
+| <img src="https://flagcdn.com/20x15/au.png" width="20" height="15" alt="호주"> 호주 달러 | 931.61원 | 🔺 1.89 | 1.07달러 | 달러 × 930 | 8% 싸요 |
 <!-- fx:end -->
 
 ---
