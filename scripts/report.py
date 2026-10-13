@@ -22,7 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from exchange import ChartPeriod, NaverExchange, RateChart, RateType, mental_rule  # noqa: E402
 from pricelevel import Country, PriceLevelClient  # noqa: E402
-from weatheri import Continent, WeatheriClient  # noqa: E402
+from weatheri import Continent, WeatheriClient, WeatherIcon  # noqa: E402
 
 KST = timezone(timedelta(hours=9))
 ROOT = Path(__file__).resolve().parent.parent
@@ -95,7 +95,7 @@ def fx_score(vs_avg_pct: Optional[float]) -> Optional[float]:
 @dataclass
 class Row:
     dest: Destination
-    icons: str = ""
+    icons: list = field(default_factory=list)  # 일별 WeatherIcon
     max_c: Optional[float] = None
     min_c: Optional[float] = None
     rain_days: Optional[int] = None
@@ -129,7 +129,7 @@ async def collect_weather(rows: list[Row], days: int = 7) -> None:
                 w = await wx.get_weather(city)
                 daily = w.daily[:days]
                 row.days = len(daily)
-                row.icons = "".join(x.icon.emoji for x in daily)
+                row.icons = [x.icon for x in daily]
                 row.max_c = sum(x.temp_max_c or 0 for x in daily) / len(daily)
                 row.min_c = sum(x.temp_min_c or 0 for x in daily) / len(daily)
                 row.rain_days = sum(1 for x in daily if (x.precip_mm or 0) >= 1)
@@ -178,7 +178,37 @@ async def collect_fx(fx: NaverExchange, currencies: list[str]) -> dict[str, dict
 
 WEEKDAY = "월화수목금토일"
 
-# 국기는 이모지 대신 이미지로 넣는다 — Windows 는 국기 이모지를 'TW' 같은 글자로 보여주기 때문
+# 아이콘은 이모지 대신 이미지로 넣는다 — OS 마다 이모지 모양이 다르고, Windows 는 국기를 'TW' 같은 글자로 보여주기 때문
+# 날씨: Meteocons(MIT) · 그 외(국기·메달·화살표 등): Twemoji(CC-BY 4.0). 버전을 고정해 갑자기 깨지지 않게 한다.
+TWEMOJI_URL = "https://cdn.jsdelivr.net/gh/jdecked/twemoji@17.0.3/assets/svg/{}.svg"
+METEOCONS_URL = "https://cdn.jsdelivr.net/gh/basmilius/weather-icons@2.0.0/production/fill/all/{}.svg"
+
+METEOCONS = {
+    WeatherIcon.CLEAR: "clear-day",
+    WeatherIcon.PARTLY_CLOUDY: "partly-cloudy-day",
+    WeatherIcon.OVERCAST: "cloudy",
+    WeatherIcon.MOSTLY_CLOUDY: "overcast-day",
+    WeatherIcon.RAIN: "rain",
+    WeatherIcon.SNOW: "snow",
+    WeatherIcon.RAIN_SNOW: "sleet",
+    WeatherIcon.SHOWER: "partly-cloudy-day-rain",
+    WeatherIcon.SNOW_SHOWER: "partly-cloudy-day-snow",
+    WeatherIcon.FOG: "fog",
+    WeatherIcon.THUNDERSTORM: "thunderstorms-rain",
+    WeatherIcon.CLEAR_THEN_CLOUDY: "partly-cloudy-day",
+    WeatherIcon.CLEAR_THEN_THUNDER: "thunderstorms-day",
+    WeatherIcon.CLEAR_THEN_RAIN: "partly-cloudy-day-rain",
+    WeatherIcon.CLEAR_THEN_SNOW: "partly-cloudy-day-snow",
+    WeatherIcon.CLEAR_THEN_RAIN_SNOW: "partly-cloudy-day-sleet",
+    WeatherIcon.CLOUDY_THEN_CLEAR: "partly-cloudy-day",
+    WeatherIcon.THUNDER_THEN_CLEAR: "thunderstorms-day",
+    WeatherIcon.RAIN_THEN_CLEAR: "partly-cloudy-day-rain",
+    WeatherIcon.SNOW_THEN_CLEAR: "partly-cloudy-day-snow",
+    WeatherIcon.RAIN_SNOW_THEN_CLEAR: "partly-cloudy-day-sleet",
+    WeatherIcon.YELLOW_DUST: "dust",
+    WeatherIcon.UNKNOWN: "not-available",
+}
+
 FLAG_ISO2 = {
     "USD": "us", "JPY": "jp", "EUR": "eu", "CNY": "cn", "TWD": "tw", "HKD": "hk", "THB": "th",
     "VND": "vn", "PHP": "ph", "SGD": "sg", "MYR": "my", "GBP": "gb", "AUD": "au",
@@ -186,10 +216,25 @@ FLAG_ISO2 = {
 CITY_ISO2 = {"프랑스": "fr", "영국": "gb", "미국": "us", "오스트레일리아": "au"}
 
 
-def flag_img(iso2: Optional[str], alt: str = "") -> str:
+def _img(src: str, alt: str, size: int) -> str:
+    return f'<img src="{src}" width="{size}" height="{size}" alt="{alt}" title="{alt}">'
+
+
+def emoji_img(emoji: str, alt: str = "", size: int = 20) -> str:
+    """이모지 문자 → Twemoji 이미지 (파일명은 코드포인트, 변형 선택자 FE0F 제외)."""
+    code = "-".join(f"{ord(c):x}" for c in emoji if c != "️")
+    return _img(TWEMOJI_URL.format(code), alt or emoji, size)
+
+
+def flag_img(iso2: Optional[str], alt: str = "", size: int = 20) -> str:
+    """국가코드 → Twemoji 국기 (지역 표시 문자 두 개)."""
     if not iso2:
         return ""
-    return f'<img src="https://flagcdn.com/20x15/{iso2}.png" width="20" height="15" alt="{alt}">'
+    return emoji_img("".join(chr(0x1F1E6 + ord(c) - ord("a")) for c in iso2.lower()), alt, size)
+
+
+def weather_img(icon: WeatherIcon, size: int = 28) -> str:
+    return _img(METEOCONS_URL.format(METEOCONS.get(icon, "not-available")), icon.label, size)
 
 
 def md(d: date) -> str:
@@ -240,13 +285,13 @@ def fx_block(fx_info: dict[str, dict], now: datetime) -> str:
     lows = [currency_name(i["rate"]) for i in fx_info.values() if (i.get("pct10") or 100) <= 5]
     lines = [
         FX[0],
-        "## 💱 오늘 환율",
+        f"## {emoji_img('💱', '환율', 28)} 오늘 환율",
         f"<sub>{md(now.date())} {clock(now)} · 하나은행 기준 · 매일 아침 9시에 바뀌어요</sub>",
         "",
     ]
     if lows:
         names = ", ".join(lows)
-        lines += [f"> 💡 {names}{josa(names, '이', '가')} 지난 10년 중 가장 싼 편이에요.", ""]
+        lines += [f"> {emoji_img('💡', '알림', 18)} {names}{josa(names, '이', '가')} 지난 10년 중 가장 싼 편이에요.", ""]
     lines += [
         "| 통화 | 환율 | 어제보다 | 1,000원이면 | 빠른 계산 (현지 가격 → 원) | 1년 평균보다 |",
         "|---|---:|---:|---:|---|---:|",
@@ -258,7 +303,12 @@ def fx_block(fx_info: dict[str, dict], now: datetime) -> str:
         rule = rule.replace(" ≈ 원", "")
         unit = f" (100{r.currency_name})" if r.basis != 1 else ""
         ch = r.change or 0
-        move = f"🔺 {abs(ch):,.2f}" if ch > 0 else f"🔻 {abs(ch):,.2f}" if ch < 0 else "그대로"
+        if ch > 0:
+            move = f"{emoji_img('🔺', '올랐어요', 12)} {abs(ch):,.2f}"
+        elif ch < 0:
+            move = f"{emoji_img('🔻', '내렸어요', 12)} {abs(ch):,.2f}"
+        else:
+            move = "그대로"
         lines.append(
             f"| {currency_label(r)}{unit} | {r.base_rate:,.2f}원 | {move} "
             f"| {fmt_amount(1000 / per_unit)}{r.currency_name} | {rule} | {cheap_word(info.get('vs_avg'))} |"
@@ -282,18 +332,18 @@ def _price(r: Row) -> str:
 def weekly_block(rows: list[Row], start: date) -> str:
     end = start + timedelta(days=6)
     ok = sorted([r for r in rows if r.total is not None], key=lambda r: -(r.total or 0))
-    medals = ["🥇", "🥈", "🥉"]
+    medals = [emoji_img(m, f"{i}위", 24) for i, m in enumerate(["🥇", "🥈", "🥉"], 1)]
     head = "| 7일 날씨 | 낮 / 밤 | 비 오는 날 | 물가 (한국 대비) | 환율 (1년 평균 대비) |"
 
     def cells(r: Row) -> str:
         return (
-            f"| {r.icons} | {r.max_c:.0f}° / {r.min_c:.0f}° | {r.rain_days or 0}일 "
+            f"| {''.join(weather_img(i) for i in r.icons)} | {r.max_c:.0f}° / {r.min_c:.0f}° | {r.rain_days or 0}일 "
             f"| {_price(r)} | {cheap_word(r.fx_vs_avg)} |"
         )
 
     lines = [
         WEEKLY[0],
-        "## 🧳 이번 주 떠나기 좋은 곳",
+        f"## {emoji_img('🧳', '여행', 28)} 이번 주 떠나기 좋은 곳",
         f"<sub>{md(start)} – {md(end)} · 매주 월요일 아침 9시에 새로 골라요</sub>",
         "",
         f"| | 도시 {head}",
@@ -336,7 +386,9 @@ HEADER = "# 록핀 (Rockpin)\n\n이번 주에 떠나기 좋은 여행지와 오�
 FOOTER = (
     "---\n<sub>데이터: [웨더아이](https://www.weatheri.co.kr) · [네이버 증권](https://stock.naver.com) · "
     "[세계은행](https://data.worldbank.org) · [이코노미스트 빅맥지수](https://github.com/TheEconomist/big-mac-data) · "
-    "참고용 정보예요</sub>"
+    "참고용 정보예요<br>"
+    "아이콘: [Meteocons](https://github.com/basmilius/weather-icons) (MIT) · "
+    "[Twemoji](https://github.com/jdecked/twemoji) (CC-BY 4.0)</sub>"
 )
 
 
