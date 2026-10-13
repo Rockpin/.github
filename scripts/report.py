@@ -176,105 +176,157 @@ async def collect_fx(fx: NaverExchange, currencies: list[str]) -> dict[str, dict
 # ──────────────────────────── 마크다운 ────────────────────────────
 
 
+WEEKDAY = "월화수목금토일"
+
+FLAG = {
+    "USD": "🇺🇸", "JPY": "🇯🇵", "EUR": "🇪🇺", "CNY": "🇨🇳", "TWD": "🇹🇼", "HKD": "🇭🇰", "THB": "🇹🇭",
+    "VND": "🇻🇳", "PHP": "🇵🇭", "SGD": "🇸🇬", "MYR": "🇲🇾", "GBP": "🇬🇧", "AUD": "🇦🇺",
+}
+CITY_FLAG = {"프랑스": "🇫🇷", "영국": "🇬🇧", "미국": "🇺🇸", "오스트레일리아": "🇦🇺"}
+
+
+def md(d: date) -> str:
+    """10/13(화)"""
+    return f"{d.month}/{d.day}({WEEKDAY[d.weekday()]})"
+
+
+def clock(t: datetime) -> str:
+    """'오전 9:00', '오후 2:30'"""
+    h = t.hour % 12 or 12
+    return f"{'오전' if t.hour < 12 else '오후'} {h}:{t.minute:02d}"
+
+
+def josa(word: str, with_final: str, without_final: str) -> str:
+    """마지막 글자 받침 유무로 조사 고르기: 엔→'이', 달러→'가'."""
+    ch = word.strip()[-1:]
+    if "가" <= ch <= "힣":
+        return with_final if (ord(ch) - 0xAC00) % 28 else without_final
+    return without_final
+
+
 def fmt_amount(a: float) -> str:
     return f"{a:,.0f}" if a >= 100 else f"{a:,.2f}" if a >= 1 else f"{a:,.3f}"
 
 
+def cheap_word(pct: Optional[float], same: str = "비슷해요") -> str:
+    """기준보다 pct% 높으면 '3% 비싸요', 낮으면 '8% 싸요'."""
+    if pct is None:
+        return "-"
+    if abs(pct) < 0.5:
+        return same
+    return f"{abs(pct):.0f}% 싸요" if pct < 0 else f"{pct:.0f}% 비싸요"
+
+
+def currency_label(r) -> str:
+    """'🇯🇵 엔', '🇹🇼 대만 달러' — 같은 이름(달러)이 많아서 나라 이름을 붙인다."""
+    name = r.currency_name
+    if name in ("달러", "파운드") and r.currency not in ("USD",):
+        name = f"{r.nation_name} {name}"
+    return f"{FLAG.get(r.currency, '')} {name}".strip()
+
+
 def fx_block(fx_info: dict[str, dict], now: datetime) -> str:
+    lows = [currency_label(i["rate"]).split(" ", 1)[-1] for i in fx_info.values() if (i.get("pct10") or 100) <= 5]
     lines = [
         FX[0],
-        f"## 💱 오늘의 환율",
-        f"<sub>{now:%Y-%m-%d %H:%M} KST 기준 · 하나은행 매매기준율 · 매일 09:00 자동 갱신</sub>",
+        "## 💱 오늘 환율",
+        f"<sub>{md(now.date())} {clock(now)} · 하나은행 기준 · 매일 아침 9시에 바뀌어요</sub>",
         "",
-        "| 통화 | 기준율(원) | 전일대비 | 1,000원 = | 암산식(외화→원) | 1년 평균 대비 | 10년 중 위치 |",
-        "|---|---:|---:|---:|---|---:|---:|",
+    ]
+    if lows:
+        names = ", ".join(lows)
+        lines += [f"> 💡 {names}{josa(names, '이', '가')} 지난 10년 중 가장 싼 편이에요.", ""]
+    lines += [
+        "| 통화 | 환율 | 어제보다 | 1,000원이면 | 빠른 계산 (현지 가격 → 원) | 1년 평균보다 |",
+        "|---|---:|---:|---:|---|---:|",
     ]
     for cur, info in fx_info.items():
         r = info["rate"]
-        unit = f"{r.basis}{r.currency}" if r.basis != 1 else r.currency
         per_unit = r.per_unit(RateType.BASE)
         rule, _ = mental_rule(per_unit, r.currency_name or cur)
+        rule = rule.replace(" ≈ 원", "")
+        unit = f" (100{r.currency_name})" if r.basis != 1 else ""
         ch = r.change or 0
-        arrow = "🔺" if ch > 0 else "🔻" if ch < 0 else "➖"
-        vs = info.get("vs_avg")
-        pct10 = info.get("pct10")
+        move = f"🔺 {abs(ch):,.2f}" if ch > 0 else f"🔻 {abs(ch):,.2f}" if ch < 0 else "그대로"
         lines.append(
-            f"| {r.nation_name} {r.currency_name} ({unit}) | {r.base_rate:,.2f} | {arrow} {abs(ch):,.2f} ({r.change_rate or 0:+.2f}%) "
-            f"| {fmt_amount(1000 / per_unit)} {cur} | {rule} "
-            f"| {'-' if vs is None else f'{vs:+.1f}%'} | {'-' if pct10 is None else f'{pct10:.0f}%'} |"
+            f"| {currency_label(r)}{unit} | {r.base_rate:,.2f}원 | {move} "
+            f"| {fmt_amount(1000 / per_unit)}{r.currency_name} | {rule} | {cheap_word(info.get('vs_avg'))} |"
         )
-    lines += [
-        "",
-        "<sub>1년 평균 대비: −면 평소보다 외화가 쌈. 10년 중 위치: 지난 10년 주간 종가 중 지금보다 쌌던 비율(0% = 10년 최저).</sub>",
-        FX[1],
-    ]
+    lines.append(FX[1])
     return "\n".join(lines)
+
+
+def _city(r: Row) -> str:
+    flag = FLAG.get(r.dest.currency, "") if r.dest.currency != "EUR" else ""
+    flag = CITY_FLAG.get(r.dest.country, flag)
+    return f"{flag} **{r.dest.city}**".strip()
+
+
+def _price(r: Row) -> str:
+    if r.price_ratio is None:
+        return "-"
+    word = cheap_word((r.price_ratio - 1) * 100)
+    return word + ("*" if r.price_source == "빅맥" else "")
 
 
 def weekly_block(rows: list[Row], start: date) -> str:
     end = start + timedelta(days=6)
     ok = sorted([r for r in rows if r.total is not None], key=lambda r: -(r.total or 0))
     medals = ["🥇", "🥈", "🥉"]
+    head = "| 7일 날씨 | 낮 / 밤 | 비 오는 날 | 물가 (한국 대비) | 환율 (1년 평균 대비) |"
+
+    def cells(r: Row) -> str:
+        return (
+            f"| {r.icons} | {r.max_c:.0f}° / {r.min_c:.0f}° | {r.rain_days or 0}일 "
+            f"| {_price(r)} | {cheap_word(r.fx_vs_avg)} |"
+        )
+
     lines = [
         WEEKLY[0],
-        f"## 🧳 이번 주 추천 여행지 ({start:%m/%d} ~ {end:%m/%d})",
-        f"<sub>매주 월요일 09:00 KST 자동 선정 · 점수 = 날씨 {W_WEATHER:.0%} + 물가 {W_PRICE:.0%} + 환율 {W_FX:.0%}</sub>",
+        "## 🧳 이번 주 떠나기 좋은 곳",
+        f"<sub>{md(start)} ~ {md(end)} · 매주 월요일 아침 9시에 새로 골라요</sub>",
         "",
+        f"| | 도시 {head}",
+        "|:-:|---|---|:-:|:-:|---:|---:|",
     ]
     for i, r in enumerate(ok[:3]):
-        d = r.dest
-        if r.price_ratio is None:
-            price = "자료 없음"
-        else:
-            diff = (1 - r.price_ratio) * 100
-            word = f"{diff:.0f}% 쌈" if diff >= 0.5 else f"{-diff:.0f}% 비쌈" if diff <= -0.5 else "비슷"
-            src = "빅맥지수 기준 — 외식 한 품목이라 전체 물가와 다를 수 있음" if r.price_source == "빅맥" else "PPP 기준"
-            price = f"한국 대비 {r.price_ratio:.2f} ({word}, {src})"
-        fxv = f"1년 평균보다 {abs(r.fx_vs_avg):.1f}% {'쌈' if r.fx_vs_avg < 0 else '비쌈'}" if r.fx_vs_avg is not None else "-"
-        lines += [
-            f"### {medals[i]} {d.city} ({d.country}) — {r.total:.0f}점",
-            f"- 🌤️ 날씨: {r.icons}  낮 {r.max_c:.0f}° / 밤 {r.min_c:.0f}°, 비 온 날 {r.rain_days}/{r.days}일",
-            f"- 💸 물가: {price}",
-            f"- 💱 환율({d.currency}): {fxv}",
-            "",
-        ]
+        lines.append(f"| {medals[i]} | {_city(r)} {cells(r)}")
+    star = any(r.price_source == "빅맥" for r in ok)
     lines += [
-        "<details><summary>전체 후보 점수 보기</summary>",
         "",
-        "| 순위 | 도시 | 점수 | 7일 날씨 | 낮/밤 | 비 온 날 | 물가(한국=1) | 통화 1년 평균 대비 |",
-        "|---:|---|---:|---|---|---:|---:|---:|",
+        "<sub>" + ("* 대만은 물가 통계가 없어 빅맥 가격으로 비교했어요. 실제와 다를 수 있어요." if star else "") + "</sub>",
+        "",
+        f"<details><summary>다른 후보 {max(0, len(ok) - 3)}곳 보기</summary>",
+        "",
+        f"| 순위 | 도시 | 점수 {head}",
+        "|---:|---|---:|---|:-:|:-:|---:|---:|",
     ]
-    for i, r in enumerate(ok, 1):
-        lines.append(
-            f"| {i} | {r.dest.city} | {r.total:.0f} | {r.icons} | {r.max_c:.0f}° / {r.min_c:.0f}° | {r.rain_days}/{r.days} "
-            f"| {'-' if r.price_ratio is None else f'{r.price_ratio:.2f}'} | {'-' if r.fx_vs_avg is None else f'{r.fx_vs_avg:+.1f}%'} |"
-        )
-    failed = [r for r in rows if r.total is None]
+    for i, r in enumerate(ok[3:], 4):
+        lines.append(f"| {i} | {_city(r)} | {r.total:.0f} {cells(r)}")
     lines += ["", "</details>", ""]
+    failed = [r for r in rows if r.total is None]
     if failed:
-        lines.append("<sub>제외: " + ", ".join(f"{r.dest.city}({r.error or '데이터 부족'})" for r in failed) + "</sub>")
-        lines.append("")
+        lines += ["<sub>날씨 정보를 받지 못해 이번 주엔 뺐어요: " + ", ".join(r.dest.city for r in failed) + "</sub>", ""]
     lines += [
-        "<sub>날씨: 웨더아이 7일 예보(낮 20~27°·밤 12~22° 쾌적, 비 온 날 감점) · 물가: World Bank 민간소비 PPP×오늘 환율"
-        "(물가상승률 보정, 대만은 빅맥지수) · 환율: 네이버 증권 1년 평균 대비. 항공권·태풍·현지 일정은 반영하지 않은 참고용입니다.</sub>",
+        f"<sub>점수는 날씨 {W_WEATHER:.0%}, 물가 {W_PRICE:.0%}, 환율 {W_FX:.0%}로 매겨요. "
+        "낮 20~27°, 밤 12~22°이고 비가 적을수록 날씨 점수가 높아요. "
+        "떠나기 전에 태풍 소식과 항공권 가격도 확인해 보세요.</sub>",
         WEEKLY[1],
     ]
     return "\n".join(lines)
 
 
-def replace_block(text: str, markers: tuple[str, str], block: str) -> str:
+def extract_block(text: str, markers: tuple[str, str]) -> Optional[str]:
     start, end = markers
-    pattern = re.compile(re.escape(start) + r".*?" + re.escape(end), re.S)
-    if pattern.search(text):
-        return pattern.sub(lambda _: block, text)
-    return text.rstrip() + "\n\n" + block + "\n"
+    m = re.search(re.escape(start) + r".*?" + re.escape(end), text, re.S)
+    return m.group(0) if m else None
 
 
-HEADER = "# 록핀 (Rockpin)\n\n매주 날씨·환율·물가로 고른 추천 여행지와 오늘의 환율입니다.\n"
+HEADER = "# 록핀 (Rockpin)\n\n이번 주에 떠나기 좋은 여행지와 오늘 환율을 알려드려요."
 FOOTER = (
-    "<!-- footer:start -->\n---\n<sub>데이터: [웨더아이](https://www.weatheri.co.kr) · [네이버 증권](https://stock.naver.com) · "
-    "[World Bank](https://data.worldbank.org) · [The Economist Big Mac Index](https://github.com/TheEconomist/big-mac-data) — "
-    "투자·여행 판단의 참고 자료이며 정확성을 보장하지 않습니다.</sub>\n<!-- footer:end -->"
+    "---\n<sub>데이터: [웨더아이](https://www.weatheri.co.kr) · [네이버 증권](https://stock.naver.com) · "
+    "[세계은행](https://data.worldbank.org) · [이코노미스트 빅맥지수](https://github.com/TheEconomist/big-mac-data) · "
+    "참고용 정보예요</sub>"
 )
 
 
@@ -285,10 +337,9 @@ async def run(mode: str, readme: Path) -> None:
     now = datetime.now(KST)
     today = now.date()
     text = readme.read_text(encoding="utf-8") if readme.exists() else ""
+    weekly = extract_block(text, WEEKLY)  # daily 에선 지난 주간 블록을 그대로 둔다
     if mode == "auto":
-        mode = "weekly" if today.weekday() == 0 or WEEKLY[0] not in text else "daily"
-    if WEEKLY[0] not in text and FX[0] not in text:
-        text = HEADER  # 처음 실행: 기존 인사말을 리포트로 교체
+        mode = "weekly" if today.weekday() == 0 or weekly is None else "daily"
 
     async with NaverExchange() as fx:
         fx_info = await collect_fx(fx, FX_CURRENCIES)
@@ -317,12 +368,12 @@ async def run(mode: str, readme: Path) -> None:
         if not any(r.total is not None for r in rows):
             raise SystemExit("날씨 수집 전부 실패 — README 를 바꾸지 않음")
         start = today - timedelta(days=today.weekday())
-        text = replace_block(text, WEEKLY, weekly_block(rows, start))
+        weekly = weekly_block(rows, start)
 
-    text = replace_block(text, FX, fx_block(fx_info, now))
-    text = replace_block(text, ("<!-- footer:start -->", "<!-- footer:end -->"), FOOTER)
+    # README 는 매번 처음부터 조립한다(헤더·푸터 문구를 바꿔도 바로 반영되게)
+    parts = [HEADER, weekly, fx_block(fx_info, now), FOOTER]
     readme.parent.mkdir(parents=True, exist_ok=True)
-    readme.write_text(text.rstrip() + "\n", encoding="utf-8")
+    readme.write_text("\n\n".join(p for p in parts if p) + "\n", encoding="utf-8")
     print(f"{mode} 갱신 완료 → {readme}")
 
 
