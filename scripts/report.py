@@ -75,7 +75,7 @@ def clamp(x: float, lo: float = 0, hi: float = 100) -> float:
 
 
 def weather_score(max_c: float, min_c: float, rain_days: int, days: int) -> float:
-    """낮 최고 20~27°, 밤 최저 12~22° 를 쾌적 구간으로 보고, 비 온 날 비율로 감점."""
+    """낮 최고 20–27°, 밤 최저 12–22° 를 쾌적 구간으로 보고, 비 온 날 비율로 감점."""
     dist = max(0, 20 - max_c) + max(0, max_c - 27) + 0.5 * (max(0, 12 - min_c) + max(0, min_c - 22))
     comfort = clamp(100 - 7 * dist)
     dry = 100 * (1 - rain_days / days)
@@ -178,11 +178,18 @@ async def collect_fx(fx: NaverExchange, currencies: list[str]) -> dict[str, dict
 
 WEEKDAY = "월화수목금토일"
 
-FLAG = {
-    "USD": "🇺🇸", "JPY": "🇯🇵", "EUR": "🇪🇺", "CNY": "🇨🇳", "TWD": "🇹🇼", "HKD": "🇭🇰", "THB": "🇹🇭",
-    "VND": "🇻🇳", "PHP": "🇵🇭", "SGD": "🇸🇬", "MYR": "🇲🇾", "GBP": "🇬🇧", "AUD": "🇦🇺",
+# 국기는 이모지 대신 이미지로 넣는다 — Windows 는 국기 이모지를 'TW' 같은 글자로 보여주기 때문
+FLAG_ISO2 = {
+    "USD": "us", "JPY": "jp", "EUR": "eu", "CNY": "cn", "TWD": "tw", "HKD": "hk", "THB": "th",
+    "VND": "vn", "PHP": "ph", "SGD": "sg", "MYR": "my", "GBP": "gb", "AUD": "au",
 }
-CITY_FLAG = {"프랑스": "🇫🇷", "영국": "🇬🇧", "미국": "🇺🇸", "오스트레일리아": "🇦🇺"}
+CITY_ISO2 = {"프랑스": "fr", "영국": "gb", "미국": "us", "오스트레일리아": "au"}
+
+
+def flag_img(iso2: Optional[str], alt: str = "") -> str:
+    if not iso2:
+        return ""
+    return f'<img src="https://flagcdn.com/20x15/{iso2}.png" width="20" height="15" alt="{alt}">'
 
 
 def md(d: date) -> str:
@@ -217,16 +224,20 @@ def cheap_word(pct: Optional[float], same: str = "비슷해요") -> str:
     return f"{abs(pct):.0f}% 싸요" if pct < 0 else f"{pct:.0f}% 비싸요"
 
 
-def currency_label(r) -> str:
-    """'🇯🇵 엔', '🇹🇼 대만 달러' — 같은 이름(달러)이 많아서 나라 이름을 붙인다."""
+def currency_name(r) -> str:
+    """'엔', '대만 달러' — 같은 이름(달러)이 많아서 나라 이름을 붙인다."""
     name = r.currency_name
-    if name in ("달러", "파운드") and r.currency not in ("USD",):
+    if name in ("달러", "파운드") and r.currency != "USD":
         name = f"{r.nation_name} {name}"
-    return f"{FLAG.get(r.currency, '')} {name}".strip()
+    return name
+
+
+def currency_label(r) -> str:
+    return f"{flag_img(FLAG_ISO2.get(r.currency), r.nation_name)} {currency_name(r)}".strip()
 
 
 def fx_block(fx_info: dict[str, dict], now: datetime) -> str:
-    lows = [currency_label(i["rate"]).split(" ", 1)[-1] for i in fx_info.values() if (i.get("pct10") or 100) <= 5]
+    lows = [currency_name(i["rate"]) for i in fx_info.values() if (i.get("pct10") or 100) <= 5]
     lines = [
         FX[0],
         "## 💱 오늘 환율",
@@ -257,9 +268,8 @@ def fx_block(fx_info: dict[str, dict], now: datetime) -> str:
 
 
 def _city(r: Row) -> str:
-    flag = FLAG.get(r.dest.currency, "") if r.dest.currency != "EUR" else ""
-    flag = CITY_FLAG.get(r.dest.country, flag)
-    return f"{flag} **{r.dest.city}**".strip()
+    iso2 = CITY_ISO2.get(r.dest.country) or (FLAG_ISO2.get(r.dest.currency) if r.dest.currency != "EUR" else None)
+    return f"{flag_img(iso2, r.dest.country)} **{r.dest.city}**".strip()
 
 
 def _price(r: Row) -> str:
@@ -284,7 +294,7 @@ def weekly_block(rows: list[Row], start: date) -> str:
     lines = [
         WEEKLY[0],
         "## 🧳 이번 주 떠나기 좋은 곳",
-        f"<sub>{md(start)} ~ {md(end)} · 매주 월요일 아침 9시에 새로 골라요</sub>",
+        f"<sub>{md(start)} – {md(end)} · 매주 월요일 아침 9시에 새로 골라요</sub>",
         "",
         f"| | 도시 {head}",
         "|:-:|---|---|:-:|:-:|---:|---:|",
@@ -309,7 +319,7 @@ def weekly_block(rows: list[Row], start: date) -> str:
         lines += ["<sub>날씨 정보를 받지 못해 이번 주엔 뺐어요: " + ", ".join(r.dest.city for r in failed) + "</sub>", ""]
     lines += [
         f"<sub>점수는 날씨 {W_WEATHER:.0%}, 물가 {W_PRICE:.0%}, 환율 {W_FX:.0%}로 매겨요. "
-        "낮 20~27°, 밤 12~22°이고 비가 적을수록 날씨 점수가 높아요. "
+        "낮 20–27°, 밤 12–22°이고 비가 적을수록 날씨 점수가 높아요. "
         "떠나기 전에 태풍 소식과 항공권 가격도 확인해 보세요.</sub>",
         WEEKLY[1],
     ]
